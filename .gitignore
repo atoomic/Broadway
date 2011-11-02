@@ -1,2 +1,4 @@
 views/slide-*.tt
 logs
+sessions
+.DS_Store
