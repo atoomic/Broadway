@@ -1,0 +1,257 @@
+<h1>Perl Object ?</h1>
+
+<img src="/images/object.jpg" style="border: 0">
+
+===
+
+<p>Should cPanel use Perl Object ?</p>
+<p><p>
+<ul>
+<li>Why ?
+<li>When ?
+<li>How ?
+</ul>
+
+===
+
+<h2>Without Objects</h2>
+
+we manipulate scalars, arrays, hashes...
+<p>
+
+<pre class="prettyprint" style="font-size: 30px;">
+$hash = {
+	key => 42, 
+	another => { 
+		one => 43 
+	}
+};
+</pre>
+
+<p>
+This lead to store data in <i>/ugly/</i> hashes 
+
+===
+<h2>Problems with this approach :</h2>
+
+<p>you need to know the <b>"exact key"</b> to use... 
+
+<p>
+<pre class="prettyprint" style="font-size: 30px;">
+$hash->{key} = 42;
+$hash->{anotherlevel}->{key} = "value";
+$hash->{where}->{can}{be}{mykey} = { it => 's there' };
+</pre>
+
+<p><br>
+deep research into the code...
+
+===
+<div>
+You cannot change the key name<br>
+or storage level
+</div>
+
+<pre class="prettyprint" style="font-size: 30px;">
+$hash->{current_key} = 42;
+</pre>
+
+<p><br>
+cannot become neither
+<br>
+<pre class="prettyprint" style="font-size: 30px;">
+$hash->{updated_key} = 42;
+</pre>
+
+<p><br>
+nor
+<br>
+<pre class="prettyprint" style="font-size: 30px;">
+$hash->{better}->{updatekey} = 42;
+</pre>
+
+<p><br><br>
+without updating the full code !
+
+===
+
+You cannot control <b>life cycle</b> of an attribute : 
+<ul>
+<li>on create
+<li>on update
+<li>...
+</ul>
+
+<pre class="prettyprint" style="font-size: 30px;">
+sub somewhere {
+	...
+	$hash->{mykey} = 42 and additionnal_operation; 
+	...
+}
+
+sub otherplace {
+	...
+	$hash->{mykey} = 43 and additionnal_operation; 
+	...
+}
+</pre>
+
+===
+
+<p>
+you would need an <b>accessor</b>
+<p>
+
+<pre class="prettyprint" style="font-size: 30px;">
+sub mykey {
+	my ($self, $value) = @_;
+
+	if (defined $value) {
+		$self->{_mykey} = $value;
+		$self->additionnal_operation();
+	}
+	
+	$self->{_mykey};
+}
+</pre>
+
+===
+
+<h2>Writing documentation</h2>
+<p>... is difficult
+<pre class="prettyprint" style="font-size: 30px;">
+=pod
+	Please use $object->{level1}{level2} 
+		to access to the expected value !
+=cut
+</pre>
+
+rather than 
+<pre class="prettyprint" style="font-size: 30px;">
+=pod
+	attribute method can be used to read or update it ! 
+=cut
+	sub attribute {
+		... some code there ( or not ! )
+	}
+</pre>
+
+=== 
+
+<h2>Why object / module ?</h2>
+
+<br>
+<ul>
+<li> code is organized
+<li> Object is DRY, Lazy & Fun
+<li> code is easier to read / share
+<li> design & development can be dissociate
+<li> ( much ) more easier to test 
+<li> provides fault containment 
+<li> reduce code maintenance
+<li> simplify product evolution
+</ul>
+
+=== 
+<h3>Code organization</h3>
+
+<pre>
+Object
+|__ Human
+|     |___ Male
+|     |___ Female
+|
+|__ Transport
+      |___ Car
+      |___ Plane
+      |___ Bicycle
+
+</pre>
+
+===
+<h2>DRY : Do not Repeat Yourself</h2>
+
+<ul>
+<li> inheritance help you factorize your code 
+<li> roles ( ~ interface )
+</ul>
+
+<pre class="prettyprint" style="font-size: 30px;">
+  package Document::Page;
+  sub create {
+      my $self = shift;
+      ...   
+      do_some_stuff; # inner();
+      ...
+  }
+
+  package Document::Special;
+  extends 'Document::Page';
+  augment 'create' => sub {
+      my $self = shift;
+      $self->do_some_extra_stuff;
+  };
+</pre>
+
+===
+<h2>Lazy</h2>
+
+<ul>
+<li> provide "new" method
+<li> provide accessors
+<li> parameters validation ( types, optional, default value... )
+</ul>
+
+<pre class="prettyprint" style="font-size: 30px;">
+  package Person;
+  use Moose;
+  use Moose::Util::TypeConstraints;
+
+  subtype 'Sex'
+      => as 'Str'
+      => where { $_ =~ m{^[mf]$}s };
+
+  has 'sex'    => ( is => 'ro', isa => 'Sex', required => 1 );
+  has 'age'    => ( is => 'rw', isa => 'Int', default => 42 );	 
+</pre>
+
+===
+
+<pre class="prettyprint" style="font-size: 30px;">
+	$person = Person->new(sex => 'm');
+	$person->age(); # == 42
+	$person->age(53);
+	
+	$person = Person->new(sex => 'm', age => 45);
+
+	try {
+		Person->new(sex => 'unknonw');
+	} catch {
+		warn "Error has been detected";
+	}
+	
+</pre>
+
+===
+
+<h2>When we should not choose object :</h2>
+<ul>
+<li> performance ?
+<li> difficult to learn ?
+</ul>
+
+=== 
+
+<h2>Which object library to choose ? </h2>
+<ul>
+<li> Moose
+<li> Mouse
+<li> Moo
+<li> Mo
+<li> M
+<li> ...
+<li> Simple Object
+<li> Fast::Object ( xs code )
+</ul>
+
+and sometime <b>none</none> !
