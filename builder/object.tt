@@ -370,9 +370,9 @@ isa_ok $d2->day, 'DateTime', 'day is coerced to a DateTime object';
 <li> Mo
 <li> M
 <li> ...
-<li> Your own simple Object
-<li> Object::Tiny::XS
 <li> fields
+<li> Object::Tiny(::XS)
+<li> write your own simple Object ?
 </ul>
 </div>
 </table>
@@ -383,7 +383,6 @@ and sometimes <b>none</none> !
 
 - role
 - around
-
 
 ===
 <h2>Moo : the light one !</h2>
@@ -459,49 +458,90 @@ be careful in production ( perl >= 5.009 )
 <b>Trick :</b> mock *fields::new when current env is set to production 
 
 ===
-
-<h2>Writing your own object module ?</h2>
-
+<h2>Object::Tiny::XS : The fast one !</h2>
 
 
 ===
 
+<h2>Writing your own object module ?</h2>
+<pre class="prettyprint" style="font-size: 25px;">
+# Inspired from Object::Tiny
+package cPanel::Object;
+
+sub import {
+    return unless shift eq 'cPanel::Object';
+    my $pkg   = caller;
+
+    my $child = !! @{"${pkg}::ISA"};
+    eval join "\n",
+        "package $pkg;",
+        ($child ? () : "\@${pkg}::ISA = 'cPanel::Object';"),
+        map {
+            defined and !ref and m/^[^\W\d]\w*\z/s or die "Invalid accessor name '$_'";
+            my ($sub, $key) = ($_, $_);
+            "sub $sub { my (\$self, \$v) = \@_; \$self->{$key} = \$v if defined \$v; \$self->{$key}; }"
+        } @_;
+    die "Failed to generate $pkg" if $@;
+    return 1;
+}
+
+sub new {
+    my $class = shift;
+    bless { @_ }, $class;
+}
+</pre>
+===
+
 <h2>When we should not choose object ?</h2>
 
-<img src="/images/performance.jpg" style="float:left;padding: 20px;">
+<table>
+<tr><td>
+<img src="/images/performance.jpg" style="padding: 20px;">
+<td>
 <div>
 <ul>
 <li> performance ?
 <li> difficult to learn ?
 </ul>
 </div>
-
+</table>
+<p><p>
 <i>"Premature optimization is the root of all evil"</i> 
 <br> Tony Hoare
 
 ===
 
-Performance problem ? 
+<h2>Performance problems ?</h2> 
 
-- waiting for Database
-- waiting for IO
-- ....
+<table>
+<tr><td>
+<img src="/images/problem-solution.jpg" width=450>
+<td>
+1/ Analyze the origin of the problem 
+<ul>
+<li> waiting for database
+<li> waiting for IO
+<li> CPU usage
+<li> Memory usage
+<li> ....
+</ul>
 
+2/ then apply the correct solution
+<ul>
+<li> use parallel algorithm
+<li> use poe
+<li> do not use object
+<li> ...
+</ul>
+</table>
 ===
 <h2>Benchmarking</h2>
 
+<img src="/images/Perl-Object.png">
 <pre>
-Object::Tiny::XS:  1 secs ( 1.20 usr + -0.01 sys =  1.19 CPU) @ 5042016.81/s
-hash, no check  :  3 secs ( 1.86 usr +  0.01 sys =  1.87 CPU) @ 3208556.15/s
-Mouse           :  3 secs ( 3.66 usr +  0.00 sys =  3.66 CPU) @ 1639344.26/s
-Object::Tiny    :  3 secs ( 3.80 usr +  0.00 sys =  3.80 CPU) @ 1578947.37/s
-hash            :  5 secs ( 5.53 usr +  0.01 sys =  5.54 CPU) @ 1083032.49/s
-manual, no check:  9 secs ( 9.11 usr +  0.02 sys =  9.13 CPU) @  657174.15/s
-Moo             : 17 secs (17.37 usr +  0.03 sys = 17.40 CPU) @  344827.59/s
-manual          : 17 secs (17.89 usr +  0.02 sys = 17.91 CPU) @  335008.38/s
-Mouse no XS     : 20 secs (20.50 usr +  0.03 sys = 20.53 CPU) @  292255.24/s
-Moose           : 21 secs (21.33 usr +  0.03 sys = 21.36 CPU) @  280898.88/s
-Moo w/quote_sub : 23 secs (23.07 usr +  0.04 sys = 23.11 CPU) @  259627.87/s
+Mouse            : best average solution ( also consider Moo )  
+Object::Tiny::XS : performance
+fields           : when many update and few object creation needed
 </pre>
 
 === 
