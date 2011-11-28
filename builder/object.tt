@@ -462,36 +462,37 @@ be careful in production ( perl >= 5.009 )
 
 
 ===
-
 <h2>Writing your own object module ?</h2>
 <pre class="prettyprint" style="font-size: 25px;">
-# Inspired from Object::Tiny
-package cPanel::Object;
-
+package cPanel::Object; # Inspired from Object::Tiny
 sub import {
-    return unless shift eq 'cPanel::Object';
-    my $pkg   = caller;
-
-    my $child = !! @{"${pkg}::ISA"};
-    eval join "\n",
-        "package $pkg;",
-        ($child ? () : "\@${pkg}::ISA = 'cPanel::Object';"),
-        map {
-            defined and !ref and m/^[^\W\d]\w*\z/s or die "Invalid accessor name '$_'";
-            my ($sub, $key) = ($_, $_);
-            "sub $sub { my (\$self, \$v) = \@_; \$self->{$key} = \$v if defined \$v; \$self->{$key}; }"
-        } @_;
-    die "Failed to generate $pkg" if $@;
+    return unless shift eq __PACKAGE__;
+    my $pkg = caller;
+    @{"${pkg}::ISA"} = 'cPanel::Object';
+    map {
+        my $method = "${pkg}::$_";
+        my $code = _get_accessor_for($_); 
+        { no strict 'refs'; *$method = $code; }
+    } @_;
     return 1;
 }
-
+sub _get_accessor_for {
+    my ($key) = @_;
+    return unless caller eq __PACKAGE__;	
+    defined $key and !ref $key and $key =~ /^[^\W\d]\w*\z/s or croak("Invalid accessor name '$key'");
+    sub {
+        my ($self, $v) = @_;
+        $self->{$key} = $v if defined $v;
+        $self->{$key};
+    };
+}
 sub new {
     my $class = shift;
     bless { @_ }, $class;
 }
 </pre>
-===
 
+===
 <h2>When we should not choose object ?</h2>
 
 <table>
