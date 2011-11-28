@@ -10,10 +10,20 @@ BEGIN {
 #    $ENV{MOUSE_PUREPERL} = 1;
 }
 
+# create object
+# + set attribute
+# + get attribute
+
 # ...........hash...............
 
-my $hash = {};
 sub hash_nc {
+    my $hash = {};
+    $hash->{bar} = 32;
+    my $x = $hash->{bar};
+}
+
+my $hash = {};
+sub hash_nc_rw {
     $hash->{bar} = 32;
     my $x = $hash->{bar};
 }
@@ -21,8 +31,16 @@ sub hash_nc {
 
 # ...........hash with check...............
 
-my $hash_check = {};
 sub hash {
+	my $hash_check = {};
+    my $arg = 32;
+    croak "we take an integer" unless defined $arg and $arg =~ /^[+-]?\d+$/;
+    $hash_check->{bar} = $arg;
+    my $x = $hash_check->{bar};
+}
+
+my $hash_check = {};
+sub hash_rw {
     my $arg = 32;
     croak "we take an integer" unless defined $arg and $arg =~ /^[+-]?\d+$/;
     $hash_check->{bar} = $arg;
@@ -40,8 +58,15 @@ sub hash {
         $self->{bar} = shift;
     }
 }
-my $manual_nc = Foo::Manual::NoChecks->new;
+
 sub manual_nc {
+	my $manual_nc = Foo::Manual::NoChecks->new;
+    $manual_nc->bar(32);
+    my $x = $manual_nc->bar;
+}
+
+my $manual_nc = Foo::Manual::NoChecks->new;
+sub manual_nc_rw {
     $manual_nc->bar(32);
     my $x = $manual_nc->bar;
 }
@@ -64,8 +89,13 @@ sub manual_nc {
         return $self->{bar};
     }
 }
-my $manual = Foo::Manual->new;
 sub manual {
+	my $manual = Foo::Manual->new;
+    $manual->bar(32);
+    my $x = $manual->bar;
+}
+	my $manual = Foo::Manual->new;
+sub manual_rw {
     $manual->bar(32);
     my $x = $manual->bar;
 }
@@ -78,8 +108,13 @@ sub manual {
     has bar => (is => 'rw', isa => "Int");
     __PACKAGE__->meta->make_immutable;
 }
-my $mouse = Foo::Mouse->new;
 sub mouse {
+	my $mouse = Foo::Mouse->new;
+    $mouse->bar(32);
+    my $x = $mouse->bar;
+}
+	my $mouse = Foo::Mouse->new;
+sub mouse_rw {
     $mouse->bar(32);
     my $x = $mouse->bar;
 }
@@ -92,8 +127,13 @@ sub mouse {
     has bar => (is => 'rw', isa => "Int");
     __PACKAGE__->meta->make_immutable;
 }
-my $moose = Foo::Moose->new;
 sub moose {
+	my $moose = Foo::Moose->new;
+    $moose->bar(32);
+    my $x = $moose->bar;
+}
+	my $moose = Foo::Moose->new;
+sub moose_rw {
     $moose->bar(32);
     my $x = $moose->bar;
 }
@@ -105,8 +145,13 @@ sub moose {
     use Moo;
     has bar => (is => 'rw', isa => sub { $_[0] =~ /^[+-]?\d+$/ });
 }
-my $moo = Foo::Moo->new;
 sub moo {
+	my $moo = Foo::Moo->new;
+    $moo->bar(32);
+    my $x = $moo->bar;
+}
+	my $moo = Foo::Moo->new;
+sub moo_rw {
     $moo->bar(32);
     my $x = $moo->bar;
 }
@@ -119,8 +164,13 @@ sub moo {
     use Sub::Quote;
     has bar => (is => 'rw', isa => quote_sub q{ $_[0] =~ /^[+-]?\d+$/ });
 }
-my $mooqs = Foo::Moo::QS->new;
 sub mooqs {
+	my $mooqs = Foo::Moo::QS->new;
+    $mooqs->bar(32);
+    my $x = $mooqs->bar;
+}
+	my $mooqs = Foo::Moo::QS->new;
+sub mooqs_rw {
     $mooqs->bar(32);
     my $x = $mooqs->bar;
 }
@@ -131,8 +181,14 @@ sub mooqs {
     package Foo::Object::Tiny;
     use Object::Tiny qw(bar);
 }
-my $ot = Foo::Object::Tiny->new( bar => 32 );
 sub ot {
+	my $ot = Foo::Object::Tiny->new;#( bar => 32 );
+    $ot->bar(24);
+    my $x = $ot->bar;
+}
+	my $ot = Foo::Object::Tiny->new;#( bar => 32 );
+sub ot_rw {
+    $ot->bar(24);
     my $x = $ot->bar;
 }
 
@@ -141,32 +197,102 @@ sub ot {
 {
     package Foo::Object::Tiny::XS;
     use Object::Tiny::XS qw(bar);
+    #__PACKAGE__->mk_accessors;
 }
-my $otxs = Foo::Object::Tiny::XS->new(bar => 32);
 sub otxs {
+	my $otxs = Foo::Object::Tiny::XS->new(bar => 32);
     my $x = $otxs->bar;
 }
+	my $otxs = Foo::Object::Tiny::XS->new(bar => 32);
+sub otxs_rw {
+	#$otxs->bar(51);
+    my $x = $otxs->bar();
+}
 
+#............ Class Inspector ............
+
+#......... fields ................
+
+{
+	package Foo::Fields;
+	use fields qw(bar);
+
+	sub new {
+	    my Foo::Fields $self = shift;
+	    $self = fields::new($self) unless ref $self;
+	    return $self;
+	}
+
+}
+
+sub fields {
+	my Foo::Fields $obj = Foo::Fields->new;
+	$obj->{bar} = 42; 
+	my $x = $obj->{bar};
+}
+my Foo::Fields $obj = Foo::Fields->new;
+sub fields_rw {
+	$obj->{bar} = 42; 
+	my $x = $obj->{bar};
+}
+
+#-------
 
 use Benchmark 'timethese';
+use Data::Dumper;
+use v5.10;
 
-print "Testing Perl $], Moose $Moose::VERSION, Mouse $Mouse::VERSION, Moo $Moo::VERSION\n";
-timethese(
-    6_000_000,
+print "Testing Perl $], Moose $Moose::VERSION, Mouse $Mouse::VERSION, Moo $Moo::VERSION [ MOUSE PP $ENV{MOUSE_PUREPERL} ] \n";
+say "# Create + Read + Write only :";
+my $time = -10;
+my $results = timethese(
+    $time,
     {
-#        Moose                   => \&moose,
+        Moose                   => \&moose,
         Mouse                   => \&mouse,
         manual                  => \&manual,
         "manual, no check"      => \&manual_nc,
         'hash, no check'        => \&hash_nc,
         hash                    => \&hash,
-#        Moo                     => \&moo,
-#        "Moo w/quote_sub"       => \&mooqs,
+        Moo                     => \&moo,
+        "Moo w/quote_sub"       => \&mooqs,
         "Object::Tiny"          => \&ot,
         "Object::Tiny::XS"      => \&otxs,
+        "fields"				=> \&fields,
     }
 );
+display($results);
 
+say "# Read + Write only :";
+$results = timethese(
+    $time,
+    {
+        Moose                   => \&moose_rw,
+        Mouse                   => \&mouse_rw,
+        manual                  => \&manual_rw,
+        "manual, no check"      => \&manual_nc_rw,
+        'hash, no check'        => \&hash_nc_rw,
+        hash                    => \&hash_rw,
+        Moo                     => \&moo_rw,
+        "Moo w/quote_sub"       => \&mooqs_rw,
+        "Object::Tiny"          => \&ot_rw,
+        "Object::Tiny::XS"      => \&otxs_rw,
+        "fields"				=> \&fields_rw,
+    }
+);
+display($results);
+
+
+sub display {
+	my $results = shift;
+	
+	my %h = map { my $k = $_; my $a = $results->{$k}; $k => $a->[5] / $a->[1]  } keys %$results;
+	
+	my @methods = sort { $h{$b} <=> $h{$a}} keys %h;
+	foreach my $method (@methods) {
+		say $method, "\t\t", ': @ ', sprintf('%02d', $h{$method}), ' / sec';
+	}
+}
 
 __END__
 Testing Perl 5.012002, Moose 1.24, Mouse 0.91, Moo 0.009007, Object::Tiny 1.08, Object::Tiny::XS 1.01
