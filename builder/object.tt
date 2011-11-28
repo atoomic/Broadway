@@ -282,7 +282,7 @@ Object
 <ul>
 <li> provide "new" method
 <li> provide accessors
-<li> parameters validation ( types, optional, default value... )
+<li> parameters validation :<br>types, optional, default value...
 </ul>
 </table>
 <pre class="prettyprint" style="font-size: 30px;">
@@ -294,13 +294,15 @@ Object
   package main;
   my $p = Person->new() or Person->new(age => 64);
   $current_age = $p->age();
-  $p->age($new_age);  
+  $p->age($new_age);
+  
 </pre>
 
 ===
 <h2>Type checking</h2>
 <pre class="prettyprint" style="font-size: 30px;">
   package Person;
+  use Try::Tiny;
   use Moose;
   use Moose::Util::TypeConstraints;
 
@@ -308,13 +310,13 @@ Object
       => as 'Str'
       => where { $_ =~ m{^[mf]$}s };
 
-  has 'sex'    => ( is => 'ro', isa => 'Sex', required => 1 );
-  has 'age'    => ( is => 'rw', isa => 'Int', default => 42 );	 
+  has 'sex'    => ( is => 'ro', isa => 'Sex', required =>  1 );
+  has 'age'    => ( is => 'rw', isa => 'Int', default  => 42 );	 
 
-  my $person = Person->new(sex => 'm', age => 45);
+  my $person = Person->new( sex => 'm', age => 45 );
 
   try {
-		Person->new(sex => 'unknonw');
+		Person->new( sex => 'unknon' );
   } catch {
 		warn "Error has been detected";
   };
@@ -324,12 +326,32 @@ Object
 ===
 <h2>Coercion</h2>
 
-has dispatcher => (
-    is      => 'rw',
-    coerce  => 1,
-    default => 'Default',
-    isa     => 'Weborama::Database::Dispatcher',
+<pre class="prettyprint" style="font-size: 25px;">
+package cPanel::Types::Date;
+use Moose::Util::TypeConstraints; use DateTime; # ...
+
+subtype 'cPanel:Day' => as 'DateTime';
+coerce  'cPanel:Day' => from 'Str' => via {
+    /^\d{4}\d{2}\d{2}$/ or croak "Unable to coerce '$_' into a valid date";
+    my $dt = DateTime::Format::DateParse->parse_datetime($_);
+    $dt->set_formatter(DateTime::Format::Strptime->new(pattern => '%Y%m%d'));
+    $dt->set_time_zone('local');
+    return $dt;
+};
+
+package Test::Coerce;
+use Moose; use cPanel::Types::Date;
+
+has day => (
+	is  => 'rw',
+	isa => 'cPanel:Day',
+	coerce => 1
 );
+package main;
+my $d1 = Test::Coerce->new(day => DateTime->now());
+my $d2 = Test::Coerce->new(day => '20111130');
+isa_ok $d2->day, 'DateTime', 'day is coerced to a DateTime object';
+</pre>
 
 === 
 
@@ -348,8 +370,8 @@ has dispatcher => (
 <li> Mo
 <li> M
 <li> ...
-<li> Simple Object
-<li> Fast::Object ( xs code )
+<li> Your own simple Object
+<li> Object::Tiny::XS
 <li> fields
 </ul>
 </div>
@@ -465,6 +487,23 @@ Performance problem ?
 - waiting for IO
 - ....
 
+===
+<h2>Benchmarking</h2>
+
+<pre>
+Object::Tiny::XS:  1 secs ( 1.20 usr + -0.01 sys =  1.19 CPU) @ 5042016.81/s
+hash, no check  :  3 secs ( 1.86 usr +  0.01 sys =  1.87 CPU) @ 3208556.15/s
+Mouse           :  3 secs ( 3.66 usr +  0.00 sys =  3.66 CPU) @ 1639344.26/s
+Object::Tiny    :  3 secs ( 3.80 usr +  0.00 sys =  3.80 CPU) @ 1578947.37/s
+hash            :  5 secs ( 5.53 usr +  0.01 sys =  5.54 CPU) @ 1083032.49/s
+manual, no check:  9 secs ( 9.11 usr +  0.02 sys =  9.13 CPU) @  657174.15/s
+Moo             : 17 secs (17.37 usr +  0.03 sys = 17.40 CPU) @  344827.59/s
+manual          : 17 secs (17.89 usr +  0.02 sys = 17.91 CPU) @  335008.38/s
+Mouse no XS     : 20 secs (20.50 usr +  0.03 sys = 20.53 CPU) @  292255.24/s
+Moose           : 21 secs (21.33 usr +  0.03 sys = 21.36 CPU) @  280898.88/s
+Moo w/quote_sub : 23 secs (23.07 usr +  0.04 sys = 23.11 CPU) @  259627.87/s
+</pre>
+
 === 
 
 Common Errors & Tricks :
@@ -479,4 +518,5 @@ __PACKAGE__->meta->make_immutable();
 - use factory
 - fields use Hash::Util::Lock, unactivate it 
 - be careful with Time syscall ( try to share it : my $now = Datetime->now(); )
+- be careful with coercion : do not try to do too much ( ~ black magic )
 
