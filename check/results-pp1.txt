@@ -1,0 +1,49 @@
+Testing Perl 5.012002, Moose 2.0205, Mouse 0.97, Moo 0.009012 [ MOUSE PP 1 ] 
+# Create + Read + Write only :
+Benchmark: running Moo, Moo w/quote_sub, Moose, Mouse, Object::Tiny, Object::Tiny::XS, fields, hash, hash, no check, manual, manual, no check for at least 10 CPU seconds...
+       Moo: 11 wallclock secs (10.66 usr +  0.00 sys = 10.66 CPU) @ 169874.30/s (n=1810860)
+Moo w/quote_sub:  9 wallclock secs (10.18 usr +  0.03 sys = 10.21 CPU) @ 160982.57/s (n=1643632)
+     Moose: 11 wallclock secs (10.38 usr +  0.01 sys = 10.39 CPU) @ 114982.29/s (n=1194666)
+     Mouse: 10 wallclock secs (10.59 usr +  0.02 sys = 10.61 CPU) @ 127145.62/s (n=1349015)
+Object::Tiny: 11 wallclock secs (10.49 usr +  0.01 sys = 10.50 CPU) @ 477202.86/s (n=5010630)
+Object::Tiny::XS: 10 wallclock secs (10.62 usr +  0.02 sys = 10.64 CPU) @ 746644.74/s (n=7944300)
+    fields: 10 wallclock secs (10.25 usr +  0.00 sys = 10.25 CPU) @ 86683.51/s (n=888506)
+      hash: 11 wallclock secs (10.36 usr +  0.01 sys = 10.37 CPU) @ 603249.76/s (n=6255700)
+hash, no check: 11 wallclock secs (10.50 usr +  0.01 sys = 10.51 CPU) @ 1585866.03/s (n=16667452)
+    manual: 11 wallclock secs (10.44 usr +  0.01 sys = 10.45 CPU) @ 237437.32/s (n=2481220)
+manual, no check: 10 wallclock secs (10.24 usr +  0.02 sys = 10.26 CPU) @ 415470.76/s (n=4262730)
+hash, no check		: @ 1587376 / sec
+Object::Tiny::XS		: @ 748050 / sec
+hash		: @ 603832 / sec
+Object::Tiny		: @ 477657 / sec
+manual, no check		: @ 416282 / sec
+manual		: @ 237664 / sec
+Moo		: @ 169874 / sec
+Moo w/quote_sub		: @ 161456 / sec
+Mouse		: @ 127385 / sec
+Moose		: @ 115093 / sec
+fields		: @ 86683 / sec
+# Read + Write only :
+Benchmark: running Moo, Moo w/quote_sub, Moose, Mouse, Object::Tiny, Object::Tiny::XS, fields, hash, hash, no check, manual, manual, no check for at least 10 CPU seconds...
+       Moo: 10 wallclock secs (10.42 usr +  0.03 sys = 10.45 CPU) @ 415517.03/s (n=4342153)
+Moo w/quote_sub: 10 wallclock secs (10.58 usr +  0.02 sys = 10.60 CPU) @ 348306.04/s (n=3692044)
+     Moose: 10 wallclock secs (10.54 usr +  0.01 sys = 10.55 CPU) @ 392698.77/s (n=4142972)
+     Mouse: 10 wallclock secs (10.35 usr +  0.01 sys = 10.36 CPU) @ 376377.03/s (n=3899266)
+Object::Tiny: 11 wallclock secs (10.51 usr +  0.00 sys = 10.51 CPU) @ 1157361.56/s (n=12163870)
+Object::Tiny::XS: 11 wallclock secs (10.29 usr +  0.01 sys = 10.30 CPU) @ 6435685.34/s (n=66287559)
+    fields: 10 wallclock secs (10.28 usr +  0.00 sys = 10.28 CPU) @ 3932052.14/s (n=40421496)
+      hash: 10 wallclock secs (10.48 usr + -0.01 sys = 10.47 CPU) @ 1314474.59/s (n=13762549)
+hash, no check: 11 wallclock secs (10.53 usr +  0.02 sys = 10.55 CPU) @ 4052465.02/s (n=42753506)
+    manual: 12 wallclock secs (10.40 usr +  0.00 sys = 10.40 CPU) @ 424920.19/s (n=4419170)
+manual, no check: 12 wallclock secs (10.64 usr +  0.03 sys = 10.67 CPU) @ 893945.36/s (n=9538397)
+Object::Tiny::XS		: @ 6441939 / sec
+hash, no check		: @ 4060162 / sec
+fields		: @ 3932052 / sec
+hash		: @ 1313220 / sec
+Object::Tiny		: @ 1157361 / sec
+manual, no check		: @ 896465 / sec
+manual		: @ 424920 / sec
+Moo		: @ 416713 / sec
+Moose		: @ 393071 / sec
+Mouse		: @ 376740 / sec
+Moo w/quote_sub		: @ 348964 / sec
