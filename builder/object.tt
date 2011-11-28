@@ -4,13 +4,19 @@
 
 ===
 
-<p>Should cPanel use Perl Object ?</p>
+<h2>Perl Object ?</h2>
 <p><p>
+
+<table>
+<tr><td>
+<img src="/images/questions.jpg" width="300">
+<td>
 <ul>
 <li>Why ?
 <li>When ?
 <li>How ?
 </ul>
+</table>
 
 ===
 
@@ -23,8 +29,17 @@ we manipulate scalars, arrays, hashes...
 $hash = {
 	key => 42, 
 	another => { 
-		one => 43 
-	}
+		one  => 43,
+		deep => {
+			here => {
+				you => {
+					can => 'find me'
+				}
+			}
+		},
+		str  => "Data value" 
+	},
+	elts => [ 8, 25, 37, 64 ]
 };
 </pre>
 
@@ -44,7 +59,29 @@ $hash->{where}->{can}{be}{mykey} = { it => 's there' };
 </pre>
 
 <p><br>
-deep research into the code...
+<img src="/images/search.png" width=250>
+<p><br>
+deep research into the code...<br>
+or need to dump huge hash
+
+===
+<h2>You can s/confound/mispell/ key name</h2>
+somewhere
+<pre class="prettyprint" style="font-size: 30px;">
+sub method {
+	my $h = shift;
+	$h->{key} = 42;
+}
+</pre>
+<br>
+then use later
+<pre class="prettyprint" style="font-size: 30px;">
+...
+	$h->{keys}++ and $h->{kyes} = 51;
+...
+</pre>
+<br>
+<img src="/images/no-warning.jpg" width=250>
 
 ===
 <div>
@@ -62,25 +99,33 @@ cannot become neither
 <pre class="prettyprint" style="font-size: 30px;">
 $hash->{updated_key} = 42;
 </pre>
-
-<p><br>
+<p>
 nor
 <br>
 <pre class="prettyprint" style="font-size: 30px;">
 $hash->{better}->{updatekey} = 42;
 </pre>
-
-<p><br><br>
+<table>
+<tr><td>
+<img src="/images/source-code.jpg">
+<td>
 without updating the full code !
-
+</table>
 ===
 
 You cannot control <b>life cycle</b> of an attribute : 
+<table>
+<tr>
+<td>
+<img src="/images/hooks.jpg" width=300>
+<td>
 <ul>
 <li>on create
 <li>on update
-<li>...
+<li>before, after, around 
+<li>hooks : innner, augment...
 </ul>
+</table>
 
 <pre class="prettyprint" style="font-size: 30px;">
 sub somewhere {
@@ -102,6 +147,11 @@ sub otherplace {
 you would need an <b>accessor</b>
 <p>
 
+<table>
+<tr>
+<td>
+<img src="/images/oneway.jpg">
+<td>
 <pre class="prettyprint" style="font-size: 30px;">
 sub mykey {
 	my ($self, $value) = @_;
@@ -114,27 +164,48 @@ sub mykey {
 	$self->{_mykey};
 }
 </pre>
+</table>
+<p><p><br>
+<i>it should be the only single way<br> 
+to access to this piece of data<i>
 
 ===
 
 <h2>Writing documentation</h2>
 <p>... is difficult
-<pre class="prettyprint" style="font-size: 30px;">
-=pod
-	Please use $object->{level1}{level2} 
-		to access to the expected value !
-=cut
-</pre>
+<pre class="prettyprint" style="font-size: 30px;">Please use $object->{level1}{level2} to access the expected value !</pre>
 
 rather than 
 <pre class="prettyprint" style="font-size: 30px;">
 =pod
-	attribute method can be used to read or update it ! 
+=head attribute
+Parameters : attribute value ( optional )
+Description : attribute method can be used to read or update it ! 
+Returns : current value
+Usage :
+	# use as reader
+	my $read = $object->attribute();
+	# use as writter
+	$object->attribute($new_value);
 =cut
+
 	sub attribute {
 		... some code there ( or not ! )
 	}
 </pre>
+
+===
+
+<h1>What is object ?</h1>
+
+<img src="/images/20objects.jpg" style="border: 0">
+
+<p>
+Small piece of code
+<ul>
+<li> functions
+<li> data
+</ul>
 
 === 
 
@@ -150,11 +221,17 @@ rather than
 <li> provides fault containment 
 <li> reduce code maintenance
 <li> simplify product evolution
+<li> documentation is easier
 </ul>
 
 === 
 <h3>Code organization</h3>
 
+<table>
+<tr>
+<td>
+<img src="/images/folder-cabinet.jpg">
+<td>
 <pre>
 Object
 |__ Human
@@ -167,15 +244,19 @@ Object
       |___ Bicycle
 
 </pre>
+</table>
 
 ===
 <h2>DRY : Do not Repeat Yourself</h2>
 
+<table>
+<tr><td><img src="/images/dry.jpg">
+<td>
 <ul>
 <li> inheritance help you factorize your code 
 <li> roles ( ~ interface )
 </ul>
-
+</table>
 <pre class="prettyprint" style="font-size: 30px;">
   package Document::Page;
   sub create {
@@ -195,13 +276,29 @@ Object
 
 ===
 <h2>Lazy</h2>
-
+<table>
+<tr><td><img src="/images/lazy.jpg">
+<td>
 <ul>
 <li> provide "new" method
 <li> provide accessors
 <li> parameters validation ( types, optional, default value... )
 </ul>
+</table>
+<pre class="prettyprint" style="font-size: 30px;">
+  package Person;
+  use Moose; # or any other object module
 
+  has 'age'    => ( is => 'rw', isa => 'Int', default => 42 );
+  
+  package main;
+  my $p = Person->new() or Person->new(age => 64);
+  $current_age = $p->age();
+  $p->age($new_age);  
+</pre>
+
+===
+<h2>Type checking</h2>
 <pre class="prettyprint" style="font-size: 30px;">
   package Person;
   use Moose;
@@ -213,36 +310,37 @@ Object
 
   has 'sex'    => ( is => 'ro', isa => 'Sex', required => 1 );
   has 'age'    => ( is => 'rw', isa => 'Int', default => 42 );	 
-</pre>
 
-===
+  my $person = Person->new(sex => 'm', age => 45);
 
-<pre class="prettyprint" style="font-size: 30px;">
-	$person = Person->new(sex => 'm');
-	$person->age(); # == 42
-	$person->age(53);
-	
-	$person = Person->new(sex => 'm', age => 45);
-
-	try {
+  try {
 		Person->new(sex => 'unknonw');
-	} catch {
+  } catch {
 		warn "Error has been detected";
-	}
-	
+  };
+
 </pre>
 
 ===
+<h2>Coercion</h2>
 
-<h2>When we should not choose object :</h2>
-<ul>
-<li> performance ?
-<li> difficult to learn ?
-</ul>
+has dispatcher => (
+    is      => 'rw',
+    coerce  => 1,
+    default => 'Default',
+    isa     => 'Weborama::Database::Dispatcher',
+);
 
 === 
 
 <h2>Which object library to choose ? </h2>
+
+<table>
+<tr>
+<td>
+<img src="/images/jolly-moose-cartoon.gif">
+<td>
+<div>
 <ul>
 <li> Moose
 <li> Mouse
@@ -252,6 +350,133 @@ Object
 <li> ...
 <li> Simple Object
 <li> Fast::Object ( xs code )
+<li> fields
 </ul>
+</div>
+</table>
+and sometimes <b>none</none> !
 
-and sometime <b>none</none> !
+===
+<h2>Moose : the fat one !</h2>
+
+- role
+- around
+
+
+===
+<h2>Moo : the light one !</h2>
+
+===
+<h2>fields : compile-time class</h2>
+
+Still want to keep using [better] hash ?
+
+<pre class="prettyprint" style="font-size: 30px;">
+package Animal::Sounds;
+use fields qw(cat dog bird);
+
+sub new {
+    my Animal::Sounds $self = shift;
+    $self = fields::new($self) unless ref $self;
+    return $self;
+}
+
+package main;
+my Animal::Sounds $sound = Animal::Sounds->new(); # typed lexical
+$sound->{cat}   = 'mmmm'; # ok
+$sound->{horse} = 'hiia'; # generates compile-time error  
+# No such class field "horse" in variable $sound of type Animal::Sounds
+</pre>
+
+<p><p>
+Objects ( typed ) with named fields are as compact and as fast arrays to access
+
+===
+
+<h2>fields</h2>
+
+be careful in production ( perl >= 5.009 )
+
+<table>
+<tr>
+<td>
+<pre class="prettyprint" style="font-size: 25px;">
+
+
+121	13.3ms
+122	7.62ms
+123	20.9ms
+124	35.2ms
+125	
+126	
+127	6.71s
+
+
+128	61.6ms
+129
+</pre>
+<td>
+<pre class="prettyprint" style="font-size: 25px;">
+# extract from field.pm
+*new = sub {
+	my $class = shift;
+	$class = ref $class if ref $class;
+	require Hash::Util;
+	my $self = bless {}, $class;
+					
+	# The lock_keys() prototype won't work since we require Hash::Util :(
+	&Hash::Util::lock_keys(\%$self, _accessible_keys($class));
+    # spent  6.00s making 20172 calls to Hash::Util::lock_keys, avg 297us/call
+    # spent   710ms making 20172 calls to fields::_accessible_keys, avg 35us/call
+	return $self;
+}
+</pre>
+</table>
+
+<p>
+<b>Trick :</b> mock *fields::new when current env is set to production 
+
+===
+
+<h2>Writing your own object module ?</h2>
+
+
+
+===
+
+<h2>When we should not choose object ?</h2>
+
+<img src="/images/performance.jpg" style="float:left;padding: 20px;">
+<div>
+<ul>
+<li> performance ?
+<li> difficult to learn ?
+</ul>
+</div>
+
+<i>"Premature optimization is the root of all evil"</i> 
+<br> Tony Hoare
+
+===
+
+Performance problem ? 
+
+- waiting for Database
+- waiting for IO
+- ....
+
+=== 
+
+Common Errors & Tricks :
+
+- Moose object should be 
+- make Moose package immutable
+<pre class="prettyprint" style="font-size: 30px;">
+no Moose;
+__PACKAGE__->meta->make_immutable();
+</pre>
+- object creation is time consuming : use cache or singleton if possible
+- use factory
+- fields use Hash::Util::Lock, unactivate it 
+- be careful with Time syscall ( try to share it : my $now = Datetime->now(); )
+
