@@ -4,14 +4,14 @@
 PERL_DIST="/usr/local/perl-dists/perls/perl-5.12.3/bin/"
 PATH=$PERL_DIST:/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON="$PERL_DIST/plackup"
-NAME="dancer-adbass"
-APP_DIR="/var/www/adbass-corporate"
+NAME="dancer-slides-object"
+APP_DIR="/var/www/slides/perl-object"
 LOG_DIR="${APP_DIR}/logs"
 SSD=/sbin/start-stop-daemon
 USERID=www-data
 # Defaults
 RUN="no"
-OPTIONS="-E production -s Starman --worker=2 -l /tmp/${NAME}.sock -R ${APP_DIR}/restart.txt --app ${APP_DIR}/bin/app.pl"
+OPTIONS="-E production -s Starman --worker=1 -l /tmp/${NAME}.sock -R ${APP_DIR}/restart.txt --app ${APP_DIR}/bin/app.pl"
 PIDFILE="${LOG_DIR}/$NAME.pid"
 
 #
