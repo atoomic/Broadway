@@ -1,0 +1,649 @@
+<h1>Perl Dancer</h1>
+
+<img src="/images/perldancer.png" style="border: 0">
+
+<p>
+The easiest way to write <br />
+web applications with Perl
+</p>
+
+===
+
+<h1>What is Dancer?</h1>
+
+===
+
+<h3>
+web framework <br>
+for Perl
+</h3>
+
+===
+
+<h3>
+<em>micro</em> <br>
+web framework <br>
+for Perl
+</h3>
+
+===
+<h3>
+<em>effective</em> <br>
+web framework <br>
+for Perl
+</h3>
+
+===
+
+<h3>
+<em>CPAN-friendly</em> <br>
+web framework <br>
+for Perl
+</h3>
+
+===
+
+<h3>
+<em>fun</em> <br>
+web framework <br>
+for Perl
+</h3>
+
+===
+
+<h3>
+<em>PSGI</em> <br>
+web framework <br>
+for Perl
+</h3>
+
+===
+
+It's a Domain Specific Language (<em>DSL</em>)<br />
+for building web applications.
+
+===
+
+Route-based implementation
+
+===
+
+As intuitive as possible
+
+===
+
+Very thin layer
+
+===
+
+<h1>Origins</h1>
+
+===
+
+<h2>The legacy</h2>
+
+<center><img src="/images/castle.jpg"></center>
+
+<p>
+CGI.pm 
+</p>
+
+===
+
+<pre class="prettyprint" style="font-size: 30px;">
+use CGI;
+
+# init stuff that gets run 
+# at every single request
+my $q = CGI->new;
+
+# crappy code to find out 
+# what the user wants...
+if ($q->param('action') eq 'do_stuff') {
+    ...
+}
+
+# build the response by hand
+print $q->header();
+print $some_content;
+</pre>
+
+===
+
+CGI is slow, unmaintainable and boring.
+
+===
+
+<img src="/images/optimus.jpg" style="float: left;">
+<div style="padding-top: 1em;">
+<h3>The big sister</h3>
+
+
+<p style="padding-top: 2em;">Catalyst</p>
+</div>
+
+===
+
+<pre class="prettyprint">
+package MyApp::Controller::Root;
+...
+
+sub index :Path :Args(0) {
+    my ( $self, $c ) = @_;
+
+    # Hello World
+    $c-&gt;response-&gt;body( 
+        $c-&gt;welcome_message );
+}
+</pre>
+
+===
+
+Catalyst is powerful, but the <br />
+price to pay is <em>complexity</em>
+
+===
+
+How about making <br />
+web development <em>simple</em>?
+
+===
+
+(and fun!)
+
+===
+
+<img src="/images/sinatra.png" align="left">
+
+<h3>The inspiration</h3>
+
+<p>
+Sinatra
+</p>
+
+===
+
+<pre class="prettyprint" style="font-size: 58px;">
+require 'sinatra'
+
+get '/hey' do
+    "Hello World!"
+end
+</pre>
+
+
+===
+
+<pre class="prettyprint" style="font-size: 58px;">
+use Dancer;
+
+get '/hey' => sub {
+    "Hello World!"
+};
+
+dance;
+</pre>
+
+===
+
+<h2>Dancer</h2>
+
+<img style="background-color: #fff" src="/images/dancer-logo.png" />
+
+<p>
+</p>
+
+=== 
+
+<h2>Key Features</h2>
+
+<ul>
+<li>Expressiveness</li>
+<li>Effortless</li>
+<li>Modular</li>
+<li>Lightweight</li>
+</ul>
+
+===
+
+<h1>How to dance</h1>
+
+===
+<h2>Installation</h2>
+
+<ul>
+<li>Easy (few deps)
+<li>Standalone server
+<li>zero-conf (up to you)
+</ul>
+
+===
+
+<pre>
+sudo cpanm Dancer
+</pre>
+
+===
+
+<h2>Oneliner?</h2>
+
+<pre>
+$ perl -MDancer \
+  -e 'get "/" =&gt; sub {"Golf\n"}; dance'
+...
+$ curl http://localhost:3000/
+Golf
+</pre>
+
+===
+
+<h2>Scaffolding?</h2>
+
+<pre style="font-size: 32px;">
+$ dancer -a SuperApp
+...
+$ cd SuperApp
+$ ./bin/app.pl
+&gt;&gt; Dancer server 23482 listening...
+== Entering the development dance floor ...
+</pre>
+
+===
+
+<h2>Deployment</h2>
+
+<p>
+Thanks to PSGI/Plack we<br />
+can deploy vritually anywhere
+</p>
+
+===
+
+<pre style="font-size: 30px;">
+$ plackup bin/app.pl
+HTTP::Server::PSGI: Accepting connections...
+</pre>
+
+<br/>
+A Dancer script is a<br/>
+PSGI application.
+
+===
+
+<h2>Routes</h2>
+
+<p>routes are Dancer's wires</p>
+
+===
+
+<h2>Route Handler</h2>
+
+<ul>
+<li>HTTP method
+<li>path 
+<li>subroutine
+</ul>
+
+===
+
+<pre style="text-align: center; font-size: 62px;">
+<span id="method" style="display: none;">get</span> <span id="path" style="display: none;">"/"</span> <span id="sub" style="display: none;">=&gt; sub { }; </span>
+</pre>
+
+<script>
+    $('#method').fadeIn('slow', function() {
+        $('#path').fadeIn('slow', function() {
+            $('#sub').fadeIn('slow');
+        });
+    });
+</script>
+===
+
+<h2>Static</h2>
+
+<pre class="prettyprint">
+get '/something' => sub { 
+    "static route"; 
+};
+</pre>
+
+===
+
+<h2>Named tokens</h2>
+
+<pre class="prettyprint">
+get '/profile/:user' => sub { 
+    "user: ".params->{'user'};
+};
+</pre>
+
+===
+
+<h2>Wildcards</h2>
+
+<pre class="prettyprint">
+get '/file/*.*' => sub { 
+    my ($file, $ext) = splat;
+    # ...
+};
+</pre>
+
+===
+
+<h2>Pure Perl regexps</h2>
+
+<pre class="prettyprint">
+get qr{/([a-z]{2}[\d+])/} => sub { 
+    my ($match) = splat;
+    # ...
+};
+</pre>
+
+===
+
+<h2>Static Files</h2>
+
+<pre class="prettyprint">
+set public =&gt; "/some/path";
+
+# any file in /some/path is served 
+# automatically
+</pre>
+
+===
+
+<h2>Configuration</h2>
+
+
+<pre class="prettyprint">
+# in my code
+set 'foo' => 42;
+
+# or in my config.yml
+foo: 42
+
+# or in my environments/$ENV.yml
+foo: 42
+</pre>
+
+===
+
+And lots of syntactic sugar<br />
+for building a webapp...
+
+===
+<h2>Request introspection</h2>
+
+
+<pre class="prettyprint">
+get '/' =&gt; sub {
+    if (request-&gt;upload('some_file')) {
+        ...
+    }
+};
+</pre>
+
+===
+<h2>filters</h2>
+
+<pre class="prettyprint">
+before sub { 
+    return if $_dbh-&gt;ping;
+    $_dbh = DBI-&gt;connect(...);
+};
+</pre>
+
+===
+
+<h2>Templates</h2>
+
+<pre class="prettyprint">
+# choose a template engine
+set template =&gt; 'Mason';
+
+# use it
+get '/' =&gt; sub {
+    template 'index', 
+      { somevar =&gt; 101010 };
+};
+
+===
+
+<h2>Serializers</h2>
+
+<pre class="prettyprint">
+# choose a serializer engine
+set serializer =&gt; 'JSON';
+
+# use it
+get '/data' =&gt; sub {
+    return {foo =&gt; 42};
+};
+
+$ curl http://0:3000/data
+"{foo: 42}"
+
+</pre>
+
+===
+
+<h2>Session</h2>
+
+<pre class="prettyprint" style="font-size: 32px;">
+# choose a session engine
+set session =&gt; 'Memcached';
+
+# use it
+post '/login' =&gt; sub {
+    my ($login, $passwd) = 
+        (params-&gt;{login}, params-&gt;{passwd});
+
+    if (MyApp::Auth-&gt;($login, $passwd)) {
+        session user =&gt; $login;
+    }
+};
+
+</pre>
+
+===
+
+<h2>Logger</h2>
+
+<pre class="prettyprint">
+# choose a logger engine
+set logger =&gt; 'console';
+set log    =&gt; 'debug';
+
+# use it
+get '/somewhere' =&gt; sub {
+    debug "I'm lost somewhere";
+    ...
+};
+
+</pre>
+
+===
+
+<p>Engines are pluggable modular bricks</p>
+
+<p>Very easy to write your own</p>
+
+===
+
+<ul>
+<li>Dancer::Template::Abstract</li>
+<li>Dancer::Session::Abstract</li>
+<li>Dancer::Logger::Abstract</li>
+<li>Dancer::Serializer::Abstract</li>
+</ul>
+
+===
+
+And more... with plugins
+
+===
+
+<h2>Ajax</h2>
+
+<pre class="prettyprint">
+use Dancer;
+use Dancer::Plugin::Ajax;
+
+ajax '/something' => sub {
+    ...
+};
+
+# is post or get
+# header X-Requested-With must 
+# be 'XMLHttpRequest'
+
+</pre>
+
+
+===
+
+<h2>Database</h2>
+
+<pre class="prettyprint" style="font-size: 32px;">
+
+use Dancer::Plugin::Database;
+
+get '/user/:id' => sub {
+    database->quick_select('users', 
+     { id => params-&gt;{id} });
+};
+</pre>
+
+===
+
+<h2>ReST</h2>
+
+<pre class="prettyprint" style="font-size: 32px;">
+
+use Dancer::Plugin::REST;
+
+prepare_serializer_for_format;
+
+get '/user/:id.:format' => sub {
+    my $id = params-&gt;{'id'};
+    $user = fetch_the_user($id);
+    return $user;
+};
+
+</pre>
+
+===
+
+Plugins allow you to <br />
+<em>extend</em> Dancer's DSL
+
+===
+
+<p>This is Dancer's essentials</p>
+
+===
+
+<p>There is a lot more </p>
+
+===
+
+<p style="font-size: 36px;">
+Dancer::Route::<em>Cache</em> Dancer::Template::Simple Dancer::Template::TemplateToolkit 
+Dancer::Session::YAML Dancer::Test Dancer::Session::Simple Dancer::Plugin::<em>DBIC</em>
+Dancer::Plugin::<em>Database</em> Dancer::Template::Tenjin Dancer::Template::HtmlTemplate
+Dancer::Template::Alloy Dancer::Template::Ctpp2 Dancer::Template::TemplateSandbox
+Dancer::Plugin::<em>WebSocket</em> Dancer::Plugin::SMS Dancer::Plugin::<em>Redis</em>
+</p>
+
+===
+
+
+<p style="font-size: 36px;">
+Task::Dancer Dancer::Plugin::<em>Email</em> Dancer::Session::Storable Dancer::Plugin::<em>REST</em>
+Dancer::Logger::<em>Syslog</em> Dancer::Template::Tiny Dancer::Plugin::SiteMap Dancer::Template::Haml
+Dancer::Template::MicroTemplate Dancer::Template::Xslate Dancer::Session::<em>Memcache</em>
+Dancer::Session::Cookie Dancer::Template::Mason Dancer::Plugin::<em>Ajax</em> Dancer::Plugin::Authorize
+Dancer::Plugin::Params::Normalization Dancer::Plugin::<em>Mongo</em>
+</p>
+
+===
+
+<p style="font-size: 42px;">
+Dancer::Logger::<em>PSGI</em> Dancer::Serializer::XML Dancer::Serializer::Mutable Dancer::Serializer::<em>JSON</em>
+Dancer::Cookie Dancer::<em>Serializer</em>::YAML Dancer::Logger::LogHandler Dancer::Session::<em>MongoDB</em>
+Dancer::Session::PSGI Dancer::Plugin::Scoped Dancer::Debug ...
+</p>
+
+=== 
+
+More than 50 distributions on CPAN
+
+===
+
+More and more every day!
+
+===
+
+
+<img src="/images/james.jpg" />
+
+<h2>Our Community Rocks!</h2>
+
+===
+
+<h2>Community</h2>
+
+<ul>
+<li>230 GitHub watchers
+<li> 70 GitHub forks
+<li>Very active core team (5 members)
+<li>3000 commits so far, by 40+ commiters
+</ul>
+
+===
+
+<h2>Join</h2>
+
+===
+
+<ul>
+<li>Follow <a href="http://twitter.com/PerlDancer">@PerlDancer</a> on Twitter
+<li>Follow on <a href="http://github.com/sukria/Dancer">GitHub</a>
+</ul>
+
+===
+
+<ul>
+<li>Subscribe to dancer-users@perldancer.org via <a
+href="http://perldancer.org">http://perldancer.org</a>
+<li>Join the team on IRC: irc.perl.org#dancer
+</ul>
+
+===
+
+<h1>Demo?</h1>
+
+===
+
+<h3>You already had one</h3>
+
+===
+
+<h3>seriously</h3>
+
+===
+
+<p>
+This whole presentation <br />
+was powered by Dancer
+</p>
+
+===
+
+<center><img src="/images/broadway.jpg"></center>
+
+<p>Dancer-based Slideshow engine</p>
+
+===
+<h1>Vim time</h1>
+

@@ -1,0 +1,15 @@
+Perlbal http://www.danga.com/perlbal/ http://search.cpan.org/~dormando/Perlbal-1.79/
+
+Performance attributes to research:
+
+Memory Usage
+   * Baseline memory usage
+      * No nodes, dormant
+      * 20 nodes, dormant
+   * Memory usage change with increasing number of nodes
+   * Memory usage under load
+      * check multiple node configurations and numbers
+
+Performance
+   * Perform load tests under multiple node configurations
+   * Use Apache 2.2 as the baseline
