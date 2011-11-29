@@ -33,6 +33,7 @@ echo "."
 [ -f /lib/lsb/init-functions ] && . /lib/lsb/init-functions
 
 start() {
+    $(rm -Rf /tmp/ttcompile/)
     cd "${APP_DIR}"
     log_daemon_msg "Starting plack server" "$NAME"
     ${SSD} --background --make-pidfile --start --chuid ${USERID} --quiet --pidfile "$PIDFILE" --exec $DAEMON -- $OPTIONS
@@ -91,6 +92,7 @@ case "$1" in
 
     stop)
         signal stop 0
+	$(rm -Rf /tmp/ttcompile/)
     ;;
 
     force-stop)
