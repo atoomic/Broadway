@@ -24,7 +24,10 @@
 
 we manipulate scalars, arrays, hashes...
 <p>
-
+<table>
+<tr><td>
+<img src="/images/perl-base.png">
+<td>
 <pre class="prettyprint" style="font-size: 30px;">
 $hash = {
 	key => 42, 
@@ -42,7 +45,7 @@ $hash = {
 	elts => [ 8, 25, 37, 64 ]
 };
 </pre>
-
+</table>
 <p>
 This lead to store data in <i>/ugly/</i> hashes 
 
@@ -372,6 +375,7 @@ isa_ok $d2->day, 'DateTime', 'day is coerced to a DateTime object';
 <li> ...
 <li> fields
 <li> Object::Tiny(::XS)
+<li> Class::XSAccessor
 <li> write your own simple Object ?
 </ul>
 </div>
@@ -380,13 +384,52 @@ and sometimes <b>none</none> !
 
 ===
 <h2>Moose : the fat one !</h2>
+<table>
+<tr><td><img src="/images/fat.jpg"><br>
+<i>fat but so good..</i>
+<td>
+Advantages :
+<ul>
+<li> the most advanced 
+<li> large ecosystem of extensions : MooseX : <br>
+validate, getopt, singleton, types...
+<li> can use advanced types and coercion methods
+<li> hooks : before, after, inner, augment...
+</ul>
 
-- role
-- around
-
+Disadvantages :
+<ul>
+<li> startup time
+<li> memory usage
+<li> dependencies...
+</ul>
+</table>
 ===
-<h2>Moo : the light one !</h2>
+<h2>Moo : the light one ! by MST</h2>
 
+<ul>
+<li> same goal as Mouse : provide a Moose lighter
+<li> but provide "as little as possible" : minimalist
+</ul>
+
+<pre class="prettyprint" style="font-size: 30px;">
+package Demo::Moo;
+use Moo;
+with 'Some::Role';
+has bar => (
+	is => 'rw', 
+	isa => sub { $_[0] =~ /^[+-]?\d+$/ },
+	coerce => quote_sub q{ $_[0] + 1 unless $_[0] % 2 },
+	lazy => 1,
+);
+</pre>
+
+Start with Moo and if you need more, switch to Mouse or Moose 
+<ul>
+<li> can use only one role at a time
+<li> not available : super, override, inner, augment
+<li> no initializer 
+</ul>
 ===
 <h2>fields : compile-time class</h2>
 
@@ -458,9 +501,26 @@ be careful in production ( perl >= 5.009 )
 <b>Trick :</b> mock *fields::new when current env is set to production 
 
 ===
-<h2>Object::Tiny::XS : The fast one !</h2>
+<h2>Object::Tiny[::XS] : The fast one !</h2>
 
+<ul>
+<li> use Class::XSAccessor
+<li> fast, easy but extremely limited
+<li> only implement getters
+<li> do not provide setters
+</ul>
 
+<pre class="prettyprint" style="font-size: 30px;">
+package MyClass;
+use Object::Tiny::XS qw{ list of attributes };
+1;
+  
+package main;
+my $object = MyClass->new( list => [ 42, 51 ], of => 'numbers' );
+say join(',', @{$object->list}, $object->of);
+eval { $object->attributes( 63 ); } or warn "Cannot update attribute value !";
+</pre>
+ 
 ===
 <h2>Writing your own object module ?</h2>
 <pre class="prettyprint" style="font-size: 25px;">
@@ -493,6 +553,37 @@ sub new {
 </pre>
 
 ===
+<h2>Extreme performance with Class::XSAccessor</h2>
+<table>
+<tr><td><img src="/images/c-library.jpg" width=150>
+<td>
+<ul>
+<li> <i>Fast</i> read & write
+<li> provide accessors, getters, setters and predicates
+<li> use Devel::PPPort Perl Pollution Portability
+</ul>
+</table>
+<pre class="prettyprint" style="font-size: 25px;">
+package SuperFast;
+use Class::XSAccessor
+    replace     => 1,
+    constructor => 'new',
+    accessors => {
+        speed => 'speed',
+    },
+    predicates => {
+        has_speed => 'speed',
+};
+
+package main;
+my $o = SuperFast->new(speed => 'flash');
+
+is($o->speed, 'flash');
+$o->speed('max') and say $o->speed;
+is($o->speed, 'max');
+</pre>
+
+===
 <h2>When we should not choose object ?</h2>
 
 <table>
@@ -503,6 +594,8 @@ sub new {
 <ul>
 <li> performance ?
 <li> difficult to learn ?
+<li> need to create too many objects ?
+<li> do not like abstraction ?
 </ul>
 </div>
 </table>
@@ -547,17 +640,40 @@ fields           : when many update and few object creation needed
 
 === 
 
-Common Errors & Tricks :
-
-- Moose object should be 
-- make Moose package immutable
-<pre class="prettyprint" style="font-size: 30px;">
+<h2>Common Errors & Tricks :</h2>
+<table>
+<tr><td><img src="/images/tricks.gif" width="250">
+<td>
+<ul>
+<li> make Moose package immutable
+<pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;">
 no Moose;
 __PACKAGE__->meta->make_immutable();
 </pre>
-- object creation is time consuming : use cache or singleton if possible
-- use factory
-- fields use Hash::Util::Lock, unactivate it 
-- be careful with Time syscall ( try to share it : my $now = Datetime->now(); )
-- be careful with coercion : do not try to do too much ( ~ black magic )
+<li> object creation is time consuming : 
+<pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;">
+use cache or singleton if possible
+</pre>
+<li> use factory for abstraction
+<li> fields use Hash::Util::Lock, unactivate it or change
+<pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;">
+# only if too many creations 
+</pre>
+<li> be careful with Time syscall, try to share it : 
+<pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;">
+my $now = Datetime->now();</pre>
+<li> be careful with coercion
+<pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;"># do not try to do too much
+~ /black mag/ic</pre>
+</ul>
+</table>
+===
+<h2>Thanks</h2>
 
+<img src="/images/final.jpg" style="padding:30px;">
+<p>
+nicolas.rochelemagne@cpanel.net
+<br>
+<div style="float: right; padding: 100px 50px 20px 20px; font-size: 25px;">
+<i>slides powered by Dancer Broadway app</i>
+</div>
