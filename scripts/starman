@@ -11,7 +11,7 @@ SSD=/sbin/start-stop-daemon
 USERID=www-data
 # Defaults
 RUN="no"
-OPTIONS="-E production -s Starman --worker=1 -l /tmp/${NAME}.sock -R ${APP_DIR}/restart.txt --app ${APP_DIR}/bin/app.pl"
+OPTIONS="-E production -s Starman --workers=1 -l /tmp/${NAME}.sock -R ${APP_DIR}/restart.txt --app ${APP_DIR}/bin/app.pl"
 PIDFILE="${LOG_DIR}/$NAME.pid"
 
 #
