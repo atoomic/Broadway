@@ -28,6 +28,25 @@ sub hash_nc_rw {
     my $x = $hash->{bar};
 }
 
+# ...........array...............
+
+sub array_nc {
+    my $array = [];
+    $array->[0] = 32;
+    my $x = $array->[0];
+}
+
+my $array = [];
+sub array_nc_rw {
+    $array->[0] = 32;
+    my $x = $array->[0];
+}
+
+$array->[0] = 32;
+sub array_nc_ro {
+    my $x = $array->[0];
+}
+
 
 # ...........hash with check...............
 
@@ -47,6 +66,10 @@ sub hash_rw {
     my $x = $hash_check->{bar};
 }
 
+$hash_check->{bar} = 47;
+sub hash_ro {
+    my $x = $hash_check->{bar};
+}
 
 # ...........by hand..............
 {
@@ -68,6 +91,11 @@ sub manual_nc {
 my $manual_nc = Foo::Manual::NoChecks->new;
 sub manual_nc_rw {
     $manual_nc->bar(32);
+    my $x = $manual_nc->bar;
+}
+
+$manual_nc->bar(32);
+sub manual_nc_ro {
     my $x = $manual_nc->bar;
 }
 
@@ -94,12 +122,15 @@ sub manual {
     $manual->bar(32);
     my $x = $manual->bar;
 }
-	my $manual = Foo::Manual->new;
+my $manual = Foo::Manual->new;
 sub manual_rw {
     $manual->bar(32);
     my $x = $manual->bar;
 }
-
+$manual->bar(32);
+sub manual_ro {
+    my $x = $manual->bar;
+}
 
 #.............Mouse.............
 {
@@ -113,9 +144,13 @@ sub mouse {
     $mouse->bar(32);
     my $x = $mouse->bar;
 }
-	my $mouse = Foo::Mouse->new;
+my $mouse = Foo::Mouse->new;
 sub mouse_rw {
     $mouse->bar(32);
+    my $x = $mouse->bar;
+}
+$mouse->bar(32);
+sub mouse_ro {
     my $x = $mouse->bar;
 }
 
@@ -132,29 +167,37 @@ sub moose {
     $moose->bar(32);
     my $x = $moose->bar;
 }
-	my $moose = Foo::Moose->new;
+my $moose = Foo::Moose->new;
 sub moose_rw {
     $moose->bar(32);
     my $x = $moose->bar;
 }
-
+$moose->bar(32);
+sub moose_ro {
+    my $x = $moose->bar;
+}
 
 #.............Moo...........
 {
     package Foo::Moo;
     use Moo;
-    has bar => (is => 'rw', isa => sub { $_[0] =~ /^[+-]?\d+$/ });
+    has bar => (is => 'rw');
 }
 sub moo {
 	my $moo = Foo::Moo->new;
     $moo->bar(32);
     my $x = $moo->bar;
 }
-	my $moo = Foo::Moo->new;
+my $moo = Foo::Moo->new;
 sub moo_rw {
     $moo->bar(32);
     my $x = $moo->bar;
 }
+$moo->bar(32);
+sub moo_ro {
+    my $x = $moo->bar;
+}
+
 
 
 #........... Moo using Sub::Quote..............
@@ -169,9 +212,13 @@ sub mooqs {
     $mooqs->bar(32);
     my $x = $mooqs->bar;
 }
-	my $mooqs = Foo::Moo::QS->new;
+my $mooqs = Foo::Moo::QS->new;
 sub mooqs_rw {
     $mooqs->bar(32);
+    my $x = $mooqs->bar;
+}
+$mooqs->bar(32);
+sub mooqs_ro {
     my $x = $mooqs->bar;
 }
 
@@ -182,13 +229,12 @@ sub mooqs_rw {
     use Object::Tiny qw(bar);
 }
 sub ot {
-	my $ot = Foo::Object::Tiny->new;#( bar => 32 );
-    $ot->bar(24);
+	my $ot = Foo::Object::Tiny->new( bar => 32 );
+#    $ot->bar(24);
     my $x = $ot->bar;
 }
-	my $ot = Foo::Object::Tiny->new;#( bar => 32 );
-sub ot_rw {
-    $ot->bar(24);
+my $ot = Foo::Object::Tiny->new( bar => 32 );
+sub ot_ro {
     my $x = $ot->bar;
 }
 
@@ -197,15 +243,13 @@ sub ot_rw {
 {
     package Foo::Object::Tiny::XS;
     use Object::Tiny::XS qw(bar);
-    #__PACKAGE__->mk_accessors;
 }
 sub otxs {
 	my $otxs = Foo::Object::Tiny::XS->new(bar => 32);
     my $x = $otxs->bar;
 }
-	my $otxs = Foo::Object::Tiny::XS->new(bar => 32);
-sub otxs_rw {
-	#$otxs->bar(51);
+my $otxs = Foo::Object::Tiny::XS->new(bar => 32);
+sub otxs_ro {
     my $x = $otxs->bar();
 }
 
@@ -226,14 +270,67 @@ sub otxs_rw {
 }
 
 sub fields {
-	my Foo::Fields $obj = Foo::Fields->new;
-	$obj->{bar} = 42; 
-	my $x = $obj->{bar};
+	my Foo::Fields $fields = Foo::Fields->new;
+	$fields->{bar} = 42; 
+	my $x = $fields->{bar};
 }
-my Foo::Fields $obj = Foo::Fields->new;
+my Foo::Fields $fields = Foo::Fields->new;
 sub fields_rw {
-	$obj->{bar} = 42; 
-	my $x = $obj->{bar};
+	$fields->{bar} = 42; 
+	my $x = $fields->{bar};
+}
+$fields->{bar} = 42; 
+sub fields_ro {
+	my $x = $fields->{bar};
+}
+
+#..... XSAccessor
+{
+	package Foo::XSAccessor;
+	use Class::XSAccessor
+	    replace     => 1,
+	    constructor => 'new',
+	    accessors => {
+	        speed => 'speed',
+	    };
+}
+sub xsaccessor {
+	my $xsa_o = Foo::XSAccessor->new(speed => 42);
+	$xsa_o->speed(63);
+	my $x = $xsa_o->speed;
+}
+
+my $xsa_o = Foo::XSAccessor->new(speed => 42);
+sub xsaccessor_rw {
+	$xsa_o->speed(63);
+	my $x = $xsa_o->speed;
+}
+$xsa_o->speed(63);
+sub xsaccessor_ro {
+	my $x = $xsa_o->speed;
+}
+
+#.... cPanel::Object
+{
+    package Foo::cPanel::Object;                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                            
+    use cPanel::Object qw{ bar };
+}
+
+sub cpanel_object {
+	my $cpo = Foo::cPanel::Object->new(bar => 42);
+	$cpo->bar(43);
+	my $x = $cpo->bar;
+}
+
+my $cpo = Foo::cPanel::Object->new(bar => 42);
+sub cpanel_object_rw {
+	$cpo->bar(43);
+	my $x = $cpo->bar;
+}
+$cpo->bar(43);
+sub cpanel_object_ro {
+	my $x = $cpo->bar;
 }
 
 #-------
@@ -253,12 +350,15 @@ my $results = timethese(
         manual                  => \&manual,
         "manual, no check"      => \&manual_nc,
         'hash, no check'        => \&hash_nc,
+        'array, no check'        => \&array_nc,
         hash                    => \&hash,
         Moo                     => \&moo,
         "Moo w/quote_sub"       => \&mooqs,
         "Object::Tiny"          => \&ot,
         "Object::Tiny::XS"      => \&otxs,
         "fields"				=> \&fields,
+        "Class::XSAccessor"		=> \&xsaccessor,
+        "cPanel::Object"		=> \&cpanel_object,
     }
 );
 display($results);
@@ -272,15 +372,41 @@ $results = timethese(
         manual                  => \&manual_rw,
         "manual, no check"      => \&manual_nc_rw,
         'hash, no check'        => \&hash_nc_rw,
+        'array, no check'       => \&array_nc_rw,
         hash                    => \&hash_rw,
         Moo                     => \&moo_rw,
         "Moo w/quote_sub"       => \&mooqs_rw,
-        "Object::Tiny"          => \&ot_rw,
-        "Object::Tiny::XS"      => \&otxs_rw,
+        #"Object::Tiny"          => \&ot_rw,
+        #"Object::Tiny::XS"      => \&otxs_rw,
         "fields"				=> \&fields_rw,
+        "Class::XSAccessor"		=> \&xsaccessor_rw,
+        "cPanel::Object"		=> \&cpanel_object_rw,
     }
 );
 display($results);
+
+say "# Read only :";
+$results = timethese(
+    $time,
+    {
+        Moose                   => \&moose_ro,
+        Mouse                   => \&mouse_ro,
+        manual                  => \&manual_ro,
+        "manual, no check"      => \&manual_nc_ro,
+        #'hash, no check'        => \&hash_nc_ro,
+        'array, no check'       => \&array_nc_ro,
+        hash                    => \&hash_ro,
+        Moo                     => \&moo_ro,
+        "Moo w/quote_sub"       => \&mooqs_ro,
+        "Object::Tiny"          => \&ot_ro,
+        "Object::Tiny::XS"      => \&otxs_ro,
+        "fields"				=> \&fields_ro,
+        "Class::XSAccessor"		=> \&xsaccessor_ro,
+        "cPanel::Object"		=> \&cpanel_object_ro,
+    }
+);
+display($results);
+
 
 
 sub display {
@@ -295,16 +421,47 @@ sub display {
 }
 
 __END__
-Testing Perl 5.012002, Moose 1.24, Mouse 0.91, Moo 0.009007, Object::Tiny 1.08, Object::Tiny::XS 1.01
-Benchmark: timing 6000000 iterations of Moo, Moo w/quote_sub, Moose, Mouse, Object::Tiny, Object::Tiny::XS, hash, manual, manual with no checks...
-Object::Tiny::XS:  1 secs ( 1.20 usr + -0.01 sys =  1.19 CPU) @ 5042016.81/s
-hash, no check  :  3 secs ( 1.86 usr +  0.01 sys =  1.87 CPU) @ 3208556.15/s
-Mouse           :  3 secs ( 3.66 usr +  0.00 sys =  3.66 CPU) @ 1639344.26/s
-Object::Tiny    :  3 secs ( 3.80 usr +  0.00 sys =  3.80 CPU) @ 1578947.37/s
-hash            :  5 secs ( 5.53 usr +  0.01 sys =  5.54 CPU) @ 1083032.49/s
-manual, no check:  9 secs ( 9.11 usr +  0.02 sys =  9.13 CPU) @  657174.15/s
-Moo             : 17 secs (17.37 usr +  0.03 sys = 17.40 CPU) @  344827.59/s
-manual          : 17 secs (17.89 usr +  0.02 sys = 17.91 CPU) @  335008.38/s
-Mouse no XS     : 20 secs (20.50 usr +  0.03 sys = 20.53 CPU) @  292255.24/s
-Moose           : 21 secs (21.33 usr +  0.03 sys = 21.36 CPU) @  280898.88/s
-Moo w/quote_sub : 23 secs (23.07 usr +  0.04 sys = 23.11 CPU) @  259627.87/s
+# Create + Read + Write only :
+array, no check		: @ 1997467 / sec
+hash, no check		: @ 1542022 / sec
+Object::Tiny::XS		: @ 742717 / sec
+Class::XSAccessor		: @ 676957 / sec
+hash		: @ 607349 / sec
+Mouse		: @ 504122 / sec
+Object::Tiny		: @ 490119 / sec
+manual, no check		: @ 405734 / sec
+Moo		: @ 330829 / sec
+cPanel::Object		: @ 324587 / sec
+manual		: @ 234056 / sec
+Moo w/quote_sub		: @ 163839 / sec
+Moose		: @ 117027 / sec
+fields		: @ 86778 / sec
+
+# Read + Write only :
+array, no check		: @ 4411075 / sec
+hash, no check		: @ 3814984 / sec
+fields		: @ 3744914 / sec
+Moo		: @ 2940717 / sec
+Class::XSAccessor		: @ 2780314 / sec
+Mouse		: @ 2525239 / sec
+hash		: @ 1286219 / sec
+manual, no check		: @ 901870 / sec
+cPanel::Object		: @ 668084 / sec
+manual		: @ 428740 / sec
+Moose		: @ 390980 / sec
+Moo w/quote_sub		: @ 344925 / sec
+
+# Read only :
+array, no check		: @ 14160456 / sec
+fields		: @ 8340944 / sec
+hash		: @ 8222589 / sec
+Class::XSAccessor		: @ 7267358 / sec
+Moo		: @ 6990505 / sec
+Object::Tiny::XS		: @ 6616615 / sec
+Mouse		: @ 5173894 / sec
+Object::Tiny		: @ 2143657 / sec
+Moo w/quote_sub		: @ 2085235 / sec
+manual, no check		: @ 1854791 / sec
+Moose		: @ 1747625 / sec
+cPanel::Object		: @ 1392971 / sec
+manual		: @ 1323322 / sec
