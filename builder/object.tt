@@ -501,6 +501,55 @@ be careful in production ( perl >= 5.009 )
 <b>Trick :</b> mock *fields::new when current env is set to production 
 
 ===
+<h2>Control hash life cycle ?</h2>
+
+Still want to improve hash usage ?
+<pre class="prettyprint" style="font-size: 30px;">
+package main;
+use Human;
+use Test::More;
+
+my $john = Human->new;
+
+$john->{age} = 45;
+is($john->{age}, 45, "nothing special");
+
+$john->{age} = 123;
+is($john->{age}, 99, "what happens there ?");
+</pre>
+<br>
+How is it possible ?
+
+===
+<h2>Use tie to hook</h2>
+
+<pre class="prettyprint" style="font-size: 25px;">
+package Human;
+
+sub TIESCALAR { die unless(ref $_[1] eq 'CODE'); my $foo=$_[1]; bless $foo, $_[0]; }
+sub STORE { my $self = shift; $self->(@_); }
+sub FETCH { shift->(); }
+
+# many more available : DELETE, CLEAR, EXISTS, NEXTKEY...
+
+sub new {
+    my $class = shift;
+    my $self = bless {}, $class;
+
+    my $age;
+    tie $self->{age}, __PACKAGE__, sub {
+        my ($value) = @_;
+        return $age unless defined $value;
+        warn "You looks very old, can you check if your age is $value ?" and $value = 99 if $value >= 100;
+        $age = $value;
+        return $age; 
+    };
+    $self;
+}
+</pre>
+You can override operator, even using '=' with lvalue.
+
+===
 <h2>Object::Tiny[::XS] : The fast one !</h2>
 
 <ul>
