@@ -421,47 +421,48 @@ sub display {
 }
 
 __END__
+
 # Create + Read + Write only :
-array, no check		: @ 1997467 / sec
-hash, no check		: @ 1542022 / sec
-Object::Tiny::XS		: @ 742717 / sec
-Class::XSAccessor		: @ 676957 / sec
-hash		: @ 607349 / sec
-Mouse		: @ 504122 / sec
-Object::Tiny		: @ 490119 / sec
-manual, no check		: @ 405734 / sec
-Moo		: @ 330829 / sec
-cPanel::Object		: @ 324587 / sec
-manual		: @ 234056 / sec
-Moo w/quote_sub		: @ 163839 / sec
-Moose		: @ 117027 / sec
-fields		: @ 86778 / sec
+array, no check		: @ 1.982.135 / sec
+hash, no check		: @ 1.554.117 / sec
+Object::Tiny::XS	: @ 752.460 / sec
+Class::XSAccessor	: @ 700.578 / sec
+hash			    : @ 595.214 / sec
+Mouse		        : @ 505.599 / sec
+Object::Tiny		: @ 494.229 / sec
+manual, no check	: @ 408.308 / sec
+Moo		            : @ 336.274 / sec
+cPanel::Object		: @ 320.333 / sec
+manual		        : @ 232.286 / sec
+Moo w/quote_sub		: @ 163.217 / sec
+Moose		        : @ 116.270 / sec
+fields		        : @ 86.073 / sec
 
 # Read + Write only :
-array, no check		: @ 4411075 / sec
-hash, no check		: @ 3814984 / sec
-fields		: @ 3744914 / sec
-Moo		: @ 2940717 / sec
-Class::XSAccessor		: @ 2780314 / sec
-Mouse		: @ 2525239 / sec
-hash		: @ 1286219 / sec
-manual, no check		: @ 901870 / sec
-cPanel::Object		: @ 668084 / sec
-manual		: @ 428740 / sec
-Moose		: @ 390980 / sec
-Moo w/quote_sub		: @ 344925 / sec
+array, no check		: @ 4373588 / sec
+fields		        : @ 3916163 / sec
+hash, no check		: @ 3881697 / sec
+Class::XSAccessor	: @ 2827632 / sec
+Moo					: @ 2755261 / sec
+Mouse				: @ 2424401 / sec
+hash				: @ 1271093 / sec
+manual, no check	: @ 908419 / sec
+cPanel::Object		: @ 663033 / sec
+manual				: @ 425900 / sec
+Moose				: @ 394944 / sec
+Moo w/quote_sub		: @ 345527 / sec
 
 # Read only :
-array, no check		: @ 14160456 / sec
-fields		: @ 8340944 / sec
-hash		: @ 8222589 / sec
-Class::XSAccessor		: @ 7267358 / sec
-Moo		: @ 6990505 / sec
-Object::Tiny::XS		: @ 6616615 / sec
-Mouse		: @ 5173894 / sec
-Object::Tiny		: @ 2143657 / sec
-Moo w/quote_sub		: @ 2085235 / sec
-manual, no check		: @ 1854791 / sec
-Moose		: @ 1747625 / sec
-cPanel::Object		: @ 1392971 / sec
-manual		: @ 1323322 / sec
+array, no check		: @ 11674483 / sec
+fields				: @ 8786421 / sec
+hash				: @ 8401805 / sec
+Class::XSAccessor	: @ 7176117 / sec
+Moo					: @ 6924408 / sec
+Object::Tiny::XS	: @ 6515002 / sec
+Mouse				: @ 5116735 / sec
+Object::Tiny		: @ 2165966 / sec
+Moo w/quote_sub		: @ 1978394 / sec
+manual, no check	: @ 1833426 / sec
+Moose				: @ 1744569 / sec
+cPanel::Object		: @ 1364384 / sec
+manual				: @ 1280067 / sec
