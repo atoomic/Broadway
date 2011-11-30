@@ -561,7 +561,7 @@ $sound->{horse} = 'hiia'; # generates compile-time error
 </pre>
 
 <p><p>
-Objects ( typed ) with named fields are as compact and as fast arrays to access
+Objects ( typed ) with named fields are <br>as compact and as fast arrays to access
 
 ===
 <h2>fields</h2>
@@ -711,9 +711,9 @@ You can override operator, even using '=' with lvalue.
 
 <img src="/images/Perl-Object.png">
 <pre>
-Mouse            : best average solution ( also consider Moo )  
-Object::Tiny::XS : performance
-fields           : when many update and few object creation needed
+Mouse             : best average solution ( also consider Moo )  
+Class::XSAccessor : performance
+fields            : when many update and few object creation needed
 </pre>
 
 === 
@@ -733,9 +733,9 @@ __PACKAGE__->meta->make_immutable();
 use cache or singleton if possible
 </pre>
 <li> use factory for abstraction
-<li> fields use Hash::Util::Lock, unactivate it or change
+<li> fields use Hash::Util::Lock
 <pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;">
-# only if too many creations 
+# bad idea if too many objects creation 
 </pre>
 <li> be careful with Time syscall, try to share it : 
 <pre class="prettyprint" style="font-size: 30px; padding:0px; margin:0px;">
