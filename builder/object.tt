@@ -199,7 +199,7 @@ Usage :
 
 ===
 
-<h1>What is object ?</h1>
+<h1>What is an object ?</h1>
 
 <img src="/images/20objects.jpg" style="border: 0">
 
@@ -431,125 +431,6 @@ Start with Moo and if you need more, switch to Mouse or Moose
 <li> no initializer 
 </ul>
 ===
-<h2>fields : compile-time class</h2>
-
-Still want to keep using [better] hash ?
-
-<pre class="prettyprint" style="font-size: 30px;">
-package Animal::Sounds;
-use fields qw(cat dog bird);
-
-sub new {
-    my Animal::Sounds $self = shift;
-    $self = fields::new($self) unless ref $self;
-    return $self;
-}
-
-package main;
-my Animal::Sounds $sound = Animal::Sounds->new(); # typed lexical
-$sound->{cat}   = 'mmmm'; # ok
-$sound->{horse} = 'hiia'; # generates compile-time error  
-# No such class field "horse" in variable $sound of type Animal::Sounds
-</pre>
-
-<p><p>
-Objects ( typed ) with named fields are as compact and as fast arrays to access
-
-===
-
-<h2>fields</h2>
-
-be careful in production ( perl >= 5.009 )
-
-<table>
-<tr>
-<td>
-<pre class="prettyprint" style="font-size: 25px;">
-
-
-121	13.3ms
-122	7.62ms
-123	20.9ms
-124	35.2ms
-125	
-126	
-127	6.71s
-
-
-128	61.6ms
-129
-</pre>
-<td>
-<pre class="prettyprint" style="font-size: 25px;">
-# extract from field.pm
-*new = sub {
-	my $class = shift;
-	$class = ref $class if ref $class;
-	require Hash::Util;
-	my $self = bless {}, $class;
-					
-	# The lock_keys() prototype won't work since we require Hash::Util :(
-	&Hash::Util::lock_keys(\%$self, _accessible_keys($class));
-    # spent  6.00s making 20172 calls to Hash::Util::lock_keys, avg 297us/call
-    # spent   710ms making 20172 calls to fields::_accessible_keys, avg 35us/call
-	return $self;
-}
-</pre>
-</table>
-
-<p>
-<b>Trick :</b> mock *fields::new when current env is set to production 
-
-===
-<h2>Control hash life cycle ?</h2>
-
-Still want to improve hash usage ?
-<pre class="prettyprint" style="font-size: 30px;">
-package main;
-use Human;
-use Test::More;
-
-my $john = Human->new;
-
-$john->{age} = 45;
-is($john->{age}, 45, "nothing special");
-
-$john->{age} = 123;
-is($john->{age}, 99, "what happens there ?");
-</pre>
-<br>
-How is it possible ?
-
-===
-<h2>Use tie to hook</h2>
-
-<pre class="prettyprint" style="font-size: 25px;">
-package Human;
-
-sub TIESCALAR { die unless(ref $_[1] eq 'CODE'); my $foo=$_[1]; bless $foo, $_[0]; }
-sub STORE { my $self = shift; $self->(@_); }
-sub FETCH { shift->(); }
-
-# many more available : DELETE, CLEAR, EXISTS, NEXTKEY...
-
-sub new {
-    my $class = shift;
-    my $self = bless {}, $class;
-
-    my $age;
-    tie $self->{age}, __PACKAGE__, sub {
-        my ($value) = @_;
-        return $age unless defined $value;
-        warn "You looks very old, can you check if your age is $value ?" and $value = 99 if $value >= 100;
-        $age = $value;
-        return $age; 
-    };
-    $self;
-}
-</pre>
-You can override operator, even using '=' with lvalue.
-
-===
 <h2>Object::Tiny[::XS] : The fast one !</h2>
 
 <ul>
@@ -602,6 +483,31 @@ sub new {
 </pre>
 
 ===
+<h2>Using your own object module</h2>
+Create a class
+<pre class="prettyprint" style="font-size: 25px;">
+# then later
+package MyObject;
+use cPanel::Object qw{ list of attributes };
+
+# that's all you need !
+</pre>
+
+Start playing with it
+<pre class="prettyprint" style="font-size: 25px;">
+package main;
+
+# initialize your object using new method
+my $elt  = MyObject->new(list => [ 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 ]);
+
+# getter available
+my $list = $elt->list;
+
+# setter available
+$elt->of('numbers'); 
+</pre>
+
+===
 <h2>Extreme performance with Class::XSAccessor</h2>
 <table>
 <tr><td><img src="/images/c-library.jpg" width=150>
@@ -631,6 +537,129 @@ is($o->speed, 'flash');
 $o->speed('max') and say $o->speed;
 is($o->speed, 'max');
 </pre>
+
+===
+<h2>Still want to keep using [better] hash ?</h2>
+
+fields builtin provide compile-time class
+
+<pre class="prettyprint" style="font-size: 30px;">
+package Animal::Sounds;
+use fields qw(cat dog bird);
+
+sub new {
+    my Animal::Sounds $self = shift;
+    $self = fields::new($self) unless ref $self;
+    return $self;
+}
+
+package main;
+my Animal::Sounds $sound = Animal::Sounds->new(); # typed lexical
+$sound->{cat}   = 'mmmm'; # ok
+$sound->{horse} = 'hiia'; # generates compile-time error  
+# No such class field "horse" in variable $sound of type Animal::Sounds
+</pre>
+
+<p><p>
+Objects ( typed ) with named fields are as compact and as fast arrays to access
+
+===
+<h2>fields</h2>
+
+be careful in production ( perl >= 5.009 )
+
+<table>
+<tr>
+<td>
+<pre class="prettyprint" style="font-size: 25px;">
+
+
+121	13.3ms
+122	7.62ms
+123	20.9ms
+124	35.2ms
+125	
+126	
+127	6.71s
+
+
+128	61.6ms
+129
+</pre>
+<td>
+<pre class="prettyprint" style="font-size: 25px;">
+# extract from field.pm
+*new = sub {
+	my $class = shift;
+	$class = ref $class if ref $class;
+	require Hash::Util;
+	my $self = bless {}, $class;
+					
+	# The lock_keys() prototype won't work since we require Hash::Util :(
+	&Hash::Util::lock_keys(\%$self, _accessible_keys($class));
+    # spent  6.00s making 20172 calls to Hash::Util::lock_keys, avg 297us/call
+    # spent   710ms making 20172 calls to fields::_accessible_keys, avg 35us/call
+	return $self;
+}
+</pre>
+</table>
+
+<p>
+<ul>
+<li> provides fast read access to attributes
+<li> slow on object creation
+</ul>
+<p>
+<b>Trick :</b> mock *fields::new when current env is set to production 
+
+===
+<h2>Control hash life cycle ?</h2>
+
+Still want to improve hash usage ?
+<pre class="prettyprint" style="font-size: 30px;">
+package main;
+use Human;
+use Test::More;
+
+my $john = Human->new;
+
+$john->{age} = 45;
+is($john->{age}, 45, "nothing special");
+
+$john->{age} = 123;
+is($john->{age}, 99, "what happens there ?");
+</pre>
+<br>
+How is it possible ?
+
+===
+<h2>Use tie to hook</h2>
+
+<pre class="prettyprint" style="font-size: 25px;">
+package Human;
+
+sub TIESCALAR { die unless(ref $_[1] eq 'CODE'); my $foo=$_[1]; bless $foo, $_[0]; }
+sub STORE { my $self = shift; $self->(@_); }
+sub FETCH { shift->(); }
+
+# many more available : DELETE, CLEAR, EXISTS, NEXTKEY...
+
+sub new {
+    my $class = shift;
+    my $self = bless {}, $class;
+
+    my $age;
+    tie $self->{age}, __PACKAGE__, sub {
+        my ($value) = @_;
+        return $age unless defined $value;
+        warn "You looks very old, can you check if your age is $value ?" and $value = 99 if $value >= 100;
+        $age = $value;
+        return $age; 
+    };
+    $self;
+}
+</pre>
+You can override operator, even using '=' with lvalue.
 
 ===
 <h2>When we should not choose object ?</h2>
